@@ -1,4 +1,4 @@
-package com.kobeay.couple_schedule.server.domain;
+package com.kobeay.couple_schedule.server.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
