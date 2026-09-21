@@ -9,6 +9,17 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class User {
+    public User(
+            String email,
+            String passwordHash,
+            String nickname,
+            LoginType loginType
+    ) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.nickname = nickname;
+        this.loginType = loginType;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
