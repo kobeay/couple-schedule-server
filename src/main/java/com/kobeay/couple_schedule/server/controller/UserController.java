@@ -1,14 +1,13 @@
 package com.kobeay.couple_schedule.server.controller;
 
+import com.kobeay.couple_schedule.server.dto.LoginRequest;
+import com.kobeay.couple_schedule.server.dto.LoginResponse;
 import com.kobeay.couple_schedule.server.dto.SignUpRequest;
 import com.kobeay.couple_schedule.server.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
-// 이 클래스는 HTTP 요청을 받는 Controller
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -19,8 +18,19 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    // HTTP 요청의 Body에 들어있는 데이터를 이 매개변수에 넣어줘
     public void signup(@Valid @RequestBody SignUpRequest request) {
         userService.signup(request);
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
+        String token = userService.login(request);
+
+        return new LoginResponse(token);
+    }
+
+    @GetMapping("/me")
+    public Long me(Authentication authentication) {
+        return (Long) authentication.getPrincipal();
     }
 }
