@@ -1,6 +1,7 @@
 package com.kobeay.couple_schedule.server.config;
 
 import com.kobeay.couple_schedule.server.jwt.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,7 +26,7 @@ public class SecurityConfig {
     @Bean
     // HTTP 요청이 들어왔을 때 어떤 요청은 허용하고
     // 어떤 요청은 인증이 필요한지 정하는 보안 규칙
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws  Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // CSRF 보안 비활성화
         http
                 .csrf(csrf -> csrf.disable())
@@ -35,6 +36,13 @@ public class SecurityConfig {
                                 "/api/users/login"
                         ).permitAll()
                         .anyRequest().authenticated()
+                )
+
+                // 인증되지 않은 요청에 401 Unauthorized 반환
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                        })
                 )
 
                 .addFilterBefore(
