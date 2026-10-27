@@ -1,4 +1,4 @@
-package com.kobeay.couple_schedule.server.jwt;
+package com.kobeay.couple_schedule.server.global.jwt;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;

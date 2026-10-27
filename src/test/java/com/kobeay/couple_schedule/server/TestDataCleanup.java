@@ -1,7 +1,7 @@
 package com.kobeay.couple_schedule.server;
 
-import com.kobeay.couple_schedule.server.repository.RefreshTokenRepository;
-import com.kobeay.couple_schedule.server.repository.UserRepository;
+import com.kobeay.couple_schedule.server.user.repository.RefreshTokenRepository;
+import com.kobeay.couple_schedule.server.user.repository.UserRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 

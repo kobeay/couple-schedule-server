@@ -1,4 +1,4 @@
-package com.kobeay.couple_schedule.server.dto;
+package com.kobeay.couple_schedule.server.user.dto;
 
 import lombok.Getter;
 

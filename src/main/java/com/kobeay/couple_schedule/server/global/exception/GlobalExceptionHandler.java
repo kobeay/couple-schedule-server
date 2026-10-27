@@ -1,4 +1,4 @@
-package com.kobeay.couple_schedule.server.exception;
+package com.kobeay.couple_schedule.server.global.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
