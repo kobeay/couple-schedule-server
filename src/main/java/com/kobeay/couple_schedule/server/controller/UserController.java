@@ -3,6 +3,7 @@ package com.kobeay.couple_schedule.server.controller;
 import com.kobeay.couple_schedule.server.dto.LoginRequest;
 import com.kobeay.couple_schedule.server.dto.LoginResponse;
 import com.kobeay.couple_schedule.server.dto.SignUpRequest;
+import com.kobeay.couple_schedule.server.dto.RefreshRequest;
 import com.kobeay.couple_schedule.server.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
@@ -24,13 +25,21 @@ public class UserController {
 
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
-        String token = userService.login(request);
-
-        return new LoginResponse(token);
+        return userService.login(request);
     }
 
     @GetMapping("/me")
     public Long me(Authentication authentication) {
         return (Long) authentication.getPrincipal();
+    }
+
+    @PostMapping("/refresh")
+    public LoginResponse refresh(@Valid @RequestBody RefreshRequest request) {
+        return userService.refresh(request);
+    }
+
+    @PostMapping("/logout")
+    public void logout(@Valid @RequestBody RefreshRequest request) {
+        userService.logout(request);
     }
 }
