@@ -27,7 +27,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String token = authorizationHeader.substring(7);
 
-            if (jwtTokenProvider.validateToken(token)) {
+            if (jwtTokenProvider.validateToken(token)
+                    && "access".equals(jwtTokenProvider.getTokenType(token))) {
+
                 // 1. JWT에서 사용자 ID 추출
                 Long userId = jwtTokenProvider.getUserId(token);
 

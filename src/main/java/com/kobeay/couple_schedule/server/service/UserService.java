@@ -1,14 +1,22 @@
 package com.kobeay.couple_schedule.server.service;
 
 import com.kobeay.couple_schedule.server.dto.LoginRequest;
+import com.kobeay.couple_schedule.server.dto.LoginResponse;
 import com.kobeay.couple_schedule.server.dto.SignUpRequest;
 import com.kobeay.couple_schedule.server.entity.LoginType;
+import com.kobeay.couple_schedule.server.dto.RefreshRequest;
+import com.kobeay.couple_schedule.server.entity.RefreshToken;
 import com.kobeay.couple_schedule.server.entity.User;
 import com.kobeay.couple_schedule.server.jwt.JwtTokenProvider;
+import com.kobeay.couple_schedule.server.jwt.RefreshTokenHasher;
+import com.kobeay.couple_schedule.server.repository.RefreshTokenRepository;
 import com.kobeay.couple_schedule.server.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Service
@@ -16,11 +24,21 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenHasher refreshTokenHasher;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtTokenProvider jwtTokenProvider,
+            RefreshTokenRepository refreshTokenRepository,
+            RefreshTokenHasher refreshTokenHasher
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.refreshTokenHasher = refreshTokenHasher;
     }
 
     public Optional<User> findByEmail(String email) {
@@ -52,7 +70,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public String login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
@@ -61,6 +79,99 @@ public class UserService {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        return jwtTokenProvider.createToken(user.getId());
+        String accessToken = jwtTokenProvider.createAccessToken(user.getId());
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
+        String tokenHash = refreshTokenHasher.hash(refreshToken);
+
+        // Refresh Token 만료 시각 추출
+        Instant expiresAt = jwtTokenProvider.getExpiration(refreshToken);
+
+        // Refresh Token DB 저장
+        RefreshToken tokenEntity = new RefreshToken(user, tokenHash, expiresAt);
+        refreshTokenRepository.save(tokenEntity);
+
+        return new LoginResponse(accessToken, refreshToken);
+    }
+
+    @Transactional
+    public LoginResponse refresh(RefreshRequest request) {
+        // 1. Refresh Token 추출
+        String refreshToken = request.getRefreshToken();
+
+        // 2. JWT 유효성 검증
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new BadCredentialsException("유효하지 않은 Refresh Token입니다.");
+        }
+
+        // 3. Refresh Token 타입 확인
+        if (!"refresh".equals(jwtTokenProvider.getTokenType(refreshToken))) {
+            throw new BadCredentialsException("Refresh Token이 아닙니다.");
+        }
+
+        // 4. Refresh Token 해시 생성
+        String tokenHash = refreshTokenHasher.hash(refreshToken);
+
+        // 5. DB에서 Refresh Token 조회
+        RefreshToken tokenEntity = refreshTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(() -> new BadCredentialsException("등록되지 않은 Refresh Token입니다."));
+
+        // 6. DB에 저장된 만료 시각 확인
+        if (!tokenEntity.getExpiresAt().isAfter(Instant.now())) {
+            throw new BadCredentialsException("만료된 Refresh Token입니다.");
+        }
+
+        // 7. JWT의 사용자 ID와 DB의 사용자 ID 비교
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+
+        if (!tokenEntity.getUser().getId().equals(userId)) {
+            throw new BadCredentialsException("Refresh Token 사용자 정보가 일치하지 않습니다.");
+        }
+
+        // 8. 새로운 AccessToken, Refresh Token 발급
+        String newAccessToken = jwtTokenProvider.createAccessToken(userId);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(userId);
+
+        // 9. 새로운 Refresh Token 해시 및 만료 시각 추출
+        String newTokenHash = refreshTokenHasher.hash(newRefreshToken);
+        Instant newExpiresAt = jwtTokenProvider.getExpiration(newRefreshToken);
+
+        // 10. 기존 Refresh Token 정보 교체
+        tokenEntity.rotate(newTokenHash, newExpiresAt);
+
+        // 11. 새로운 토큰 반환
+        return new LoginResponse(newAccessToken, newRefreshToken);
+    }
+
+    @Transactional
+    public void logout(RefreshRequest request) {
+        // 1. Refresh Token 추출
+        String refreshToken = request.getRefreshToken();
+
+        // 2. JWT 유효성 검증
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new BadCredentialsException("유효하지 않은 Refresh Token입니다.");
+        }
+
+        // 3. Refresh Token 타입 확인
+        if (!"refresh".equals(jwtTokenProvider.getTokenType(refreshToken))) {
+            throw new BadCredentialsException("Refresh Token이 아닙니다.");
+        }
+
+        // 4. Refresh Token 해시 생성
+        String tokenHash = refreshTokenHasher.hash(refreshToken);
+
+        // 5. DB에서 Refresh Token 조회
+        RefreshToken tokenEntity = refreshTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(() -> new BadCredentialsException("등록되지 않은 Refresh Token입니다."));
+
+        // 6. JWT 사용자 ID와 DB 사용자 ID 비교
+        Long userId = jwtTokenProvider.getUserId(refreshToken);
+
+        if (!tokenEntity.getUser().getId().equals(userId)) {
+            throw new BadCredentialsException("Refresh Token 사용자 정보가 일치하지 않습니다.");
+        }
+
+        // 7. DB에서 Refresh Token 삭제
+        refreshTokenRepository.delete(tokenEntity);
     }
 }

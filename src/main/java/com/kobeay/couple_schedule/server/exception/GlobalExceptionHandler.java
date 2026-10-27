@@ -2,6 +2,7 @@ package com.kobeay.couple_schedule.server.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 // 모든 Controller에서 발생하는 예외를 공통으로 받아서 처리하는 클래스
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    // 회원가입 시 이메일 중복 400 반환
     @ExceptionHandler(IllegalArgumentException.class)
         public ResponseEntity<String> handleIllegalArgumentException(
                 IllegalArgumentException e
@@ -17,6 +19,7 @@ public class GlobalExceptionHandler {
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
         }
+    // 필수 입력값 누락 400 반환
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> handleValidationException(
             MethodArgumentNotValidException e
@@ -29,5 +32,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(message);
+    }
+
+    // Refresh Token 인증 실패 시 401 반환
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<String> handleBadCredentialsException(
+            BadCredentialsException e
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(e.getMessage());
     }
 }
