@@ -1,6 +1,6 @@
-package com.kobeay.couple_schedule.server.repository;
+package com.kobeay.couple_schedule.server.user.repository;
 
-import com.kobeay.couple_schedule.server.entity.RefreshToken;
+import com.kobeay.couple_schedule.server.user.entity.RefreshToken;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

@@ -1,6 +1,6 @@
-package com.kobeay.couple_schedule.server.repository;
+package com.kobeay.couple_schedule.server.user.repository;
 
-import com.kobeay.couple_schedule.server.entity.User;
+import com.kobeay.couple_schedule.server.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,6 +1,6 @@
-package com.kobeay.couple_schedule.server.config;
+package com.kobeay.couple_schedule.server.global.config;
 
-import com.kobeay.couple_schedule.server.jwt.JwtAuthenticationFilter;
+import com.kobeay.couple_schedule.server.global.jwt.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,10 +1,10 @@
-package com.kobeay.couple_schedule.server.controller;
+package com.kobeay.couple_schedule.server.user.controller;
 
-import com.kobeay.couple_schedule.server.dto.LoginRequest;
-import com.kobeay.couple_schedule.server.dto.LoginResponse;
-import com.kobeay.couple_schedule.server.dto.SignUpRequest;
-import com.kobeay.couple_schedule.server.dto.RefreshRequest;
-import com.kobeay.couple_schedule.server.service.UserService;
+import com.kobeay.couple_schedule.server.user.dto.LoginRequest;
+import com.kobeay.couple_schedule.server.user.dto.LoginResponse;
+import com.kobeay.couple_schedule.server.user.dto.SignUpRequest;
+import com.kobeay.couple_schedule.server.user.dto.RefreshRequest;
+import com.kobeay.couple_schedule.server.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;

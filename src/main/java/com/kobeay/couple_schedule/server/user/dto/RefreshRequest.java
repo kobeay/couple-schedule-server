@@ -1,4 +1,4 @@
-package com.kobeay.couple_schedule.server.dto;
+package com.kobeay.couple_schedule.server.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
