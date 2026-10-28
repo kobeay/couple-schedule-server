@@ -1,6 +1,7 @@
 package com.kobeay.couple_schedule.server.user.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,7 +10,7 @@ import java.time.Instant;
 @Entity
 @Table(name = "refresh_tokens")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshToken {
     public RefreshToken(User user, String tokenHash, Instant expiresAt) {
         this.user = user;

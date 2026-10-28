@@ -11,6 +11,7 @@ import com.kobeay.couple_schedule.server.global.jwt.JwtTokenProvider;
 import com.kobeay.couple_schedule.server.global.jwt.RefreshTokenHasher;
 import com.kobeay.couple_schedule.server.user.repository.RefreshTokenRepository;
 import com.kobeay.couple_schedule.server.user.repository.UserRepository;
+import com.kobeay.couple_schedule.server.user.util.InviteCodeGenerator;
 import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -60,11 +61,18 @@ public class UserService {
 
         String encodedPassword = passwordEncoder.encode(request.getPasswordConfirm());
 
+        String inviteCode;
+
+        do {
+            inviteCode = InviteCodeGenerator.generate();
+        } while (userRepository.existsByInviteCode(inviteCode));
+
         User user = new User(
                 request.getEmail(),
                 encodedPassword,
                 request.getNickname(),
-                LoginType.LOCAL
+                LoginType.LOCAL,
+                inviteCode
         );
 
         userRepository.save(user);
