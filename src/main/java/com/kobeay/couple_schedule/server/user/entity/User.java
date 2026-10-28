@@ -1,24 +1,27 @@
 package com.kobeay.couple_schedule.server.user.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "users")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
     public User(
             String email,
             String passwordHash,
             String nickname,
-            LoginType loginType
+            LoginType loginType,
+            String inviteCode
     ) {
         this.email = email;
         this.passwordHash = passwordHash;
         this.nickname = nickname;
         this.loginType = loginType;
+        this.inviteCode = inviteCode;
     }
 
     @Id
