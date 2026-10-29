@@ -2,6 +2,7 @@ package com.kobeay.couple_schedule.server.couple.service;
 
 import com.kobeay.couple_schedule.server.couple.dto.CoupleInvitationResponse;
 import com.kobeay.couple_schedule.server.couple.dto.CoupleRequest;
+import com.kobeay.couple_schedule.server.couple.dto.CoupleResponse;
 import com.kobeay.couple_schedule.server.couple.entity.Couple;
 import com.kobeay.couple_schedule.server.couple.entity.CoupleInvitation;
 import com.kobeay.couple_schedule.server.couple.entity.InvitationStatus;
@@ -13,6 +14,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CoupleService {
@@ -120,5 +122,25 @@ public class CoupleService {
                         invitation.getCreatedAt()
                 ))
                 .toList();
+    }
+
+    public CoupleResponse getCoupleInfo(Long userId) {
+        Optional<Couple> optionalCouple = coupleRepository.findByUser1_IdOrUser2_Id(userId, userId);
+
+        if (optionalCouple.isEmpty()) {
+            return new CoupleResponse(false, null, null);
+        }
+
+        Couple couple = optionalCouple.get();
+
+        String partnerNickname;
+
+        if (couple.getUser1().getId().equals(userId)) {
+            partnerNickname = couple.getUser2().getNickname();
+        } else {
+            partnerNickname = couple.getUser1().getNickname();
+        }
+
+        return new CoupleResponse(true, partnerNickname, couple.getConnectedAt());
     }
 }
