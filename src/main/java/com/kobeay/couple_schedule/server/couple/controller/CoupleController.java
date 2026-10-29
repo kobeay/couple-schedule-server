@@ -2,6 +2,7 @@ package com.kobeay.couple_schedule.server.couple.controller;
 
 import com.kobeay.couple_schedule.server.couple.dto.CoupleInvitationResponse;
 import com.kobeay.couple_schedule.server.couple.dto.CoupleRequest;
+import com.kobeay.couple_schedule.server.couple.dto.CoupleResponse;
 import com.kobeay.couple_schedule.server.couple.service.CoupleService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
@@ -56,5 +57,12 @@ public class CoupleController {
         Long userId = (Long) authentication.getPrincipal();
 
         return coupleService.getReceivedInvitations(userId);
+    }
+
+    @GetMapping("/me")
+    public CoupleResponse getCoupleInfo(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+
+        return coupleService.getCoupleInfo(userId);
     }
 }
