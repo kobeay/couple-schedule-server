@@ -1,10 +1,7 @@
 package com.kobeay.couple_schedule.server.user.service;
 
-import com.kobeay.couple_schedule.server.user.dto.LoginRequest;
-import com.kobeay.couple_schedule.server.user.dto.LoginResponse;
-import com.kobeay.couple_schedule.server.user.dto.SignUpRequest;
+import com.kobeay.couple_schedule.server.user.dto.*;
 import com.kobeay.couple_schedule.server.user.entity.LoginType;
-import com.kobeay.couple_schedule.server.user.dto.RefreshRequest;
 import com.kobeay.couple_schedule.server.user.entity.RefreshToken;
 import com.kobeay.couple_schedule.server.user.entity.User;
 import com.kobeay.couple_schedule.server.global.jwt.JwtTokenProvider;
@@ -181,5 +178,12 @@ public class UserService {
 
         // 7. DB에서 Refresh Token 삭제
         refreshTokenRepository.delete(tokenEntity);
+    }
+
+    public UserResponse getMyInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        return new UserResponse(user.getId(), user.getEmail(), user.getNickname(), user.getInviteCode());
     }
 }
