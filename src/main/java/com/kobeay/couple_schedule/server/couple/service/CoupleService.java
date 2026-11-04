@@ -143,4 +143,12 @@ public class CoupleService {
 
         return new CoupleResponse(true, partnerNickname, couple.getConnectedAt());
     }
+
+    @Transactional
+    public void disconnectCouple(Long userId) {
+        Couple couple = coupleRepository.findByUser1_IdOrUser2_Id(userId, userId)
+                        .orElseThrow(() -> new IllegalArgumentException("연결된 커플이 없습니다."));
+
+        coupleRepository.delete(couple);
+    }
 }
