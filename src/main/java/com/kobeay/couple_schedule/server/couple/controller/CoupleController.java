@@ -65,4 +65,12 @@ public class CoupleController {
 
         return coupleService.getCoupleInfo(userId);
     }
+
+    @DeleteMapping("/me")
+    public void disconnectCouple(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+
+        coupleService.disconnectCouple(userId);
+    }
+
 }
