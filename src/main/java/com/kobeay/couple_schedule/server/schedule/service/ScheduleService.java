@@ -35,12 +35,12 @@ public class ScheduleService {
                     .orElseThrow(() -> new IllegalArgumentException("커플이 연결되어 있지 않아요."));
         }
 
-        if ((request.getStartTime() == null) != (request.getEndTime() == null)) {
-            throw new IllegalArgumentException("시작 시간과 종료 시간을 모두 입력해 주세요.");
+        if (request.getStartTime() == null && request.getEndTime() != null) {
+            throw new IllegalArgumentException("시작 시간을 먼저 입력해 주세요.");
         }
 
-        if (request.getStartTime() != null && !request.getEndTime().isAfter(request.getStartTime())) {
-            throw new IllegalArgumentException("종료 시간이 더 늦어야 합니다.");
+        if (request.getStartTime() != null && request.getEndTime() != null && !request.getEndTime().isAfter(request.getStartTime())) {
+            throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 해요.");
         }
 
         Schedule schedule = new Schedule(
