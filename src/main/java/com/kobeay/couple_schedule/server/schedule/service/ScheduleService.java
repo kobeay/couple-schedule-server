@@ -3,13 +3,18 @@ package com.kobeay.couple_schedule.server.schedule.service;
 import com.kobeay.couple_schedule.server.couple.entity.Couple;
 import com.kobeay.couple_schedule.server.couple.repository.CoupleRepository;
 import com.kobeay.couple_schedule.server.schedule.dto.ScheduleCreateRequest;
+import com.kobeay.couple_schedule.server.schedule.dto.ScheduleListResponse;
 import com.kobeay.couple_schedule.server.schedule.entity.Schedule;
 import com.kobeay.couple_schedule.server.schedule.entity.ScheduleType;
 import com.kobeay.couple_schedule.server.schedule.repository.ScheduleRepository;
 import com.kobeay.couple_schedule.server.user.entity.User;
 import com.kobeay.couple_schedule.server.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
 
 @Service
 public class ScheduleService {
@@ -55,5 +60,26 @@ public class ScheduleService {
         );
 
         scheduleRepository.save(schedule);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ScheduleListResponse> getMonthlySchedules(Long userId, int year, int month) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        Couple couple = coupleRepository.findByUser1_IdOrUser2_Id(userId, userId)
+                .orElse(null);
+
+        YearMonth yearMonth = YearMonth.of(year, month);
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        Long coupleId = couple != null ? couple.getId() : null;
+
+        List<Schedule> schedules = scheduleRepository.findMonthlySchedules(startDate, endDate, userId, coupleId, ScheduleType.PERSONAL, ScheduleType.COUPLE);
+
+        return schedules.stream()
+                .map(ScheduleListResponse::from)
+                .toList();
     }
 }
