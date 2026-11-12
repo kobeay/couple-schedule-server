@@ -76,7 +76,17 @@ public class ScheduleService {
 
         Long coupleId = couple != null ? couple.getId() : null;
 
-        List<Schedule> schedules = scheduleRepository.findMonthlySchedules(startDate, endDate, userId, coupleId, ScheduleType.PERSONAL, ScheduleType.COUPLE);
+        Long partnerId = null;
+
+        if (couple != null) {
+            if (couple.getUser1().getId().equals(userId)) {
+                partnerId = couple.getUser2().getId();
+            } else {
+                partnerId = couple.getUser1().getId();
+            }
+        }
+
+        List<Schedule> schedules = scheduleRepository.findMonthlySchedules(startDate, endDate, userId, partnerId, coupleId, ScheduleType.PERSONAL, ScheduleType.COUPLE);
 
         return schedules.stream()
                 .map(ScheduleListResponse::from)

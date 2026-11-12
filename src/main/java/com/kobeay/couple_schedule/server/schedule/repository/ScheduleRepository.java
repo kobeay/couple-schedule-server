@@ -14,7 +14,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     SELECT s FROM Schedule s
     WHERE s.date BETWEEN :startDate AND :endDate
     AND (
-        (s.type = :personalType AND s.user.id = :userId)
+        (s.type = :personalType AND (s.user.id = :userId OR s.user.id = :partnerId))
         OR
         (s.type = :coupleType AND s.couple.id = :coupleId)
     )
@@ -23,6 +23,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("userId") Long userId,
+            @Param("partnerId") Long partnerId,
             @Param("coupleId") Long coupleId,
             @Param("personalType") ScheduleType personalType,
             @Param("coupleType") ScheduleType coupleType
