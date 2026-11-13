@@ -63,4 +63,22 @@ public class Schedule {
         this.memo = memo;
         this.type = type;
     }
+
+    public void update(
+            Couple couple,
+            String title,
+            LocalDate date,
+            LocalTime startTime,
+            LocalTime endTime,
+            String memo,
+            ScheduleType type
+    ) {
+        this.couple = couple;
+        this.title = title;
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.memo = memo;
+        this.type = type;
+    }
 }

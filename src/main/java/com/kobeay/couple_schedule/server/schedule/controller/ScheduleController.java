@@ -2,6 +2,7 @@ package com.kobeay.couple_schedule.server.schedule.controller;
 
 import com.kobeay.couple_schedule.server.schedule.dto.ScheduleCreateRequest;
 import com.kobeay.couple_schedule.server.schedule.dto.ScheduleListResponse;
+import com.kobeay.couple_schedule.server.schedule.dto.ScheduleUpdateRequest;
 import com.kobeay.couple_schedule.server.schedule.service.ScheduleService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
@@ -33,5 +34,16 @@ public class ScheduleController {
         Long userId = (Long) authentication.getPrincipal();
 
         return scheduleService.getMonthlySchedules(userId, year, month);
+    }
+
+    @PutMapping("/{scheduleId}")
+    public void updateSchedule(
+            Authentication authentication,
+            @Valid @RequestBody ScheduleUpdateRequest request,
+            @PathVariable Long scheduleId
+            ) {
+        Long userId = (Long) authentication.getPrincipal();
+
+        scheduleService.updateSchedule(request, userId, scheduleId);
     }
 }
