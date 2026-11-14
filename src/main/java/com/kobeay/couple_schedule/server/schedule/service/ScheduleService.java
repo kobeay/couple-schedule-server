@@ -152,4 +152,29 @@ public class ScheduleService {
                 request.getType()
         );
     }
+
+    @Transactional
+    public void deleteSchedule(Long userId, Long scheduleId) {
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 일정입니다."));
+
+        if (schedule.getType() == ScheduleType.PERSONAL) {
+            if (!schedule.getUser().getId().equals(userId)) {
+                throw new IllegalArgumentException("일정을 삭제할 권한이 없습니다.");
+            }
+        }
+
+        if (schedule.getType() == ScheduleType.COUPLE) {
+            Couple currentCouple = coupleRepository.findByUser1_IdOrUser2_Id(userId, userId)
+                    .orElse(null);
+
+            if (currentCouple == null
+                    || schedule.getCouple() == null
+                    || !schedule.getCouple().getId().equals(currentCouple.getId())) {
+                throw new IllegalArgumentException("일저을 삭제할 권한이 없습니다.");
+            }
+        }
+
+        scheduleRepository.delete(schedule);
+    }
 }
