@@ -17,6 +17,7 @@ public class ScheduleListResponse {
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
+    private String memo;
     private ScheduleType type;
 
     public static ScheduleListResponse from(Schedule schedule) {
@@ -27,6 +28,7 @@ public class ScheduleListResponse {
                 schedule.getDate(),
                 schedule.getStartTime(),
                 schedule.getEndTime(),
+                schedule.getMemo(),
                 schedule.getType()
         );
     }
