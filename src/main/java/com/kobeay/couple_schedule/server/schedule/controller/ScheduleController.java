@@ -20,7 +20,10 @@ public class ScheduleController {
     }
 
     @PostMapping
-    public void createSchedule(Authentication authentication, @Valid @RequestBody ScheduleCreateRequest request) {
+    public void createSchedule(
+            Authentication authentication,
+            @Valid @RequestBody ScheduleCreateRequest request
+    ) {
         Long userId = (Long) authentication.getPrincipal();
 
         scheduleService.createSchedule(userId, request);
@@ -30,7 +33,8 @@ public class ScheduleController {
     public List<ScheduleListResponse> getMonthlySchedules(
             Authentication authentication,
             @RequestParam int year,
-            @RequestParam int month) {
+            @RequestParam int month
+    ) {
         Long userId = (Long) authentication.getPrincipal();
 
         return scheduleService.getMonthlySchedules(userId, year, month);
@@ -41,9 +45,19 @@ public class ScheduleController {
             Authentication authentication,
             @Valid @RequestBody ScheduleUpdateRequest request,
             @PathVariable Long scheduleId
-            ) {
+    ) {
         Long userId = (Long) authentication.getPrincipal();
 
         scheduleService.updateSchedule(request, userId, scheduleId);
+    }
+
+    @DeleteMapping("/{scheduleId}")
+    public void deleteSchedule(
+            Authentication authentication,
+            @PathVariable Long scheduleId
+    ) {
+        Long userId = (Long) authentication.getPrincipal();
+
+        scheduleService.deleteSchedule(userId, scheduleId);
     }
 }
