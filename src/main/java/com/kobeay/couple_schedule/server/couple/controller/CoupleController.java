@@ -1,6 +1,7 @@
 package com.kobeay.couple_schedule.server.couple.controller;
 
 import com.kobeay.couple_schedule.server.couple.dto.CoupleInvitationResponse;
+import com.kobeay.couple_schedule.server.couple.dto.CoupleMetDateUpdateRequest;
 import com.kobeay.couple_schedule.server.couple.dto.CoupleRequest;
 import com.kobeay.couple_schedule.server.couple.dto.CoupleResponse;
 import com.kobeay.couple_schedule.server.couple.service.CoupleService;
@@ -73,4 +74,13 @@ public class CoupleController {
         coupleService.disconnectCouple(userId);
     }
 
+    @PatchMapping("/me/met-date")
+    public void updateMetDate(
+            Authentication authentication,
+            @Valid @RequestBody CoupleMetDateUpdateRequest request
+    ) {
+        Long userId = (Long) authentication.getPrincipal();
+
+        coupleService.updateMetDate(userId, request);
+    }
 }
