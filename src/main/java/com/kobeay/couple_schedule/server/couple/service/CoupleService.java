@@ -1,6 +1,7 @@
 package com.kobeay.couple_schedule.server.couple.service;
 
 import com.kobeay.couple_schedule.server.couple.dto.CoupleInvitationResponse;
+import com.kobeay.couple_schedule.server.couple.dto.CoupleMetDateUpdateRequest;
 import com.kobeay.couple_schedule.server.couple.dto.CoupleRequest;
 import com.kobeay.couple_schedule.server.couple.dto.CoupleResponse;
 import com.kobeay.couple_schedule.server.couple.entity.Couple;
@@ -13,6 +14,7 @@ import com.kobeay.couple_schedule.server.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -128,7 +130,7 @@ public class CoupleService {
         Optional<Couple> optionalCouple = coupleRepository.findByUser1_IdOrUser2_Id(userId, userId);
 
         if (optionalCouple.isEmpty()) {
-            return new CoupleResponse(false, null, null);
+            return new CoupleResponse(false, null, null, null);
         }
 
         Couple couple = optionalCouple.get();
@@ -141,7 +143,7 @@ public class CoupleService {
             partnerNickname = couple.getUser1().getNickname();
         }
 
-        return new CoupleResponse(true, partnerNickname, couple.getConnectedAt());
+        return new CoupleResponse(true, partnerNickname, couple.getConnectedAt(), couple.getMetDate());
     }
 
     @Transactional
@@ -150,5 +152,19 @@ public class CoupleService {
                         .orElseThrow(() -> new IllegalArgumentException("연결된 커플이 없습니다."));
 
         coupleRepository.delete(couple);
+    }
+
+    @Transactional
+    public void updateMetDate(Long userId, CoupleMetDateUpdateRequest request) {
+        Couple couple = coupleRepository.findByUser1_IdOrUser2_Id(userId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("커플이 연결되어 있지 않습니다."));
+
+        LocalDate metDate = request.getMetDate();
+
+        if (metDate.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("미래 날짜는 선택할 수 없습니다.");
+        }
+
+        couple.updateMetDate(metDate);
     }
 }

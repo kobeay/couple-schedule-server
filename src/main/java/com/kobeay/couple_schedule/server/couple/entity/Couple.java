@@ -37,4 +37,8 @@ public class Couple {
 
     @Column(name = "met_date")
     private LocalDate metDate;
+
+    public void updateMetDate(LocalDate metDate) {
+        this.metDate = metDate;
+    }
 }
