@@ -186,4 +186,12 @@ public class UserService {
 
         return new UserResponse(user.getId(), user.getEmail(), user.getNickname(), user.getInviteCode());
     }
+
+    @Transactional
+    public void updateNickname(Long userId, UserNicknameUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        user.updateNickname(request.getNickname());
+    }
 }

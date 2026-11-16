@@ -41,4 +41,14 @@ public class UserController {
     public void logout(@Valid @RequestBody RefreshRequest request) {
         userService.logout(request);
     }
+
+    @PatchMapping("/me/nickname")
+    public void updateNickname(
+            Authentication authentication,
+            @Valid @RequestBody UserNicknameUpdateRequest request
+    ) {
+        Long userId = (Long) authentication.getPrincipal();
+
+        userService.updateNickname(userId, request);
+    }
 }
