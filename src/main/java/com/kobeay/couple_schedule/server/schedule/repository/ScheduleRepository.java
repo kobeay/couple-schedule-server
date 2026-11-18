@@ -3,6 +3,7 @@ package com.kobeay.couple_schedule.server.schedule.repository;
 import com.kobeay.couple_schedule.server.schedule.entity.Schedule;
 import com.kobeay.couple_schedule.server.schedule.entity.ScheduleType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -28,4 +29,12 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("personalType") ScheduleType personalType,
             @Param("coupleType") ScheduleType coupleType
     );
+
+    @Modifying
+    @Query("DELETE FROM Schedule s WHERE s.couple.id = :coupleId")
+    void deleteByCoupleId(@Param("coupleId") Long coupleId);
+
+    @Modifying
+    @Query("DELETE FROM Schedule s WHERE s.user.id = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
 }

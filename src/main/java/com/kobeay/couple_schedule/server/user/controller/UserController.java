@@ -3,6 +3,7 @@ package com.kobeay.couple_schedule.server.user.controller;
 import com.kobeay.couple_schedule.server.user.dto.*;
 import com.kobeay.couple_schedule.server.user.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,5 +51,13 @@ public class UserController {
         Long userId = (Long) authentication.getPrincipal();
 
         userService.updateNickname(userId, request);
+    }
+
+    @DeleteMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+
+        userService.deleteUser(userId);
     }
 }
