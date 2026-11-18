@@ -1,5 +1,9 @@
 package com.kobeay.couple_schedule.server.user.service;
 
+import com.kobeay.couple_schedule.server.couple.entity.Couple;
+import com.kobeay.couple_schedule.server.couple.repository.CoupleInvitationRepository;
+import com.kobeay.couple_schedule.server.couple.repository.CoupleRepository;
+import com.kobeay.couple_schedule.server.schedule.repository.ScheduleRepository;
 import com.kobeay.couple_schedule.server.user.dto.*;
 import com.kobeay.couple_schedule.server.user.entity.LoginType;
 import com.kobeay.couple_schedule.server.user.entity.RefreshToken;
@@ -24,19 +28,28 @@ public class UserService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenHasher refreshTokenHasher;
+    private final CoupleRepository coupleRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final CoupleInvitationRepository coupleInvitationRepository;
 
     public UserService(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             JwtTokenProvider jwtTokenProvider,
             RefreshTokenRepository refreshTokenRepository,
-            RefreshTokenHasher refreshTokenHasher
+            RefreshTokenHasher refreshTokenHasher,
+            CoupleRepository coupleRepository,
+            ScheduleRepository scheduleRepository,
+            CoupleInvitationRepository coupleInvitationRepository
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
         this.refreshTokenRepository = refreshTokenRepository;
         this.refreshTokenHasher = refreshTokenHasher;
+        this.coupleRepository = coupleRepository;
+        this.scheduleRepository = scheduleRepository;
+        this.coupleInvitationRepository = coupleInvitationRepository;
     }
 
     public Optional<User> findByEmail(String email) {
@@ -185,5 +198,30 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         return new UserResponse(user.getId(), user.getEmail(), user.getNickname(), user.getInviteCode());
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        Optional<Couple> couple = coupleRepository.findByUser1_IdOrUser2_Id(userId, userId);
+
+        if (couple.isPresent()) {
+            scheduleRepository.deleteByCoupleId(couple.get().getId());
+        }
+
+        scheduleRepository.deleteByUserId(userId);
+
+        coupleInvitationRepository.deleteByUserId(userId);
+
+        refreshTokenRepository.deleteByUserId(userId);
+
+        if (couple.isPresent()) {
+            coupleRepository.delete(couple.get());
+            coupleRepository.flush();
+        }
+
+        userRepository.delete(user);
     }
 }
