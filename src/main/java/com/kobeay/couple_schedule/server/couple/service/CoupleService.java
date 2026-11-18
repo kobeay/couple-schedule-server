@@ -9,6 +9,7 @@ import com.kobeay.couple_schedule.server.couple.entity.CoupleInvitation;
 import com.kobeay.couple_schedule.server.couple.entity.InvitationStatus;
 import com.kobeay.couple_schedule.server.couple.repository.CoupleInvitationRepository;
 import com.kobeay.couple_schedule.server.couple.repository.CoupleRepository;
+import com.kobeay.couple_schedule.server.schedule.repository.ScheduleRepository;
 import com.kobeay.couple_schedule.server.user.entity.User;
 import com.kobeay.couple_schedule.server.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -23,11 +24,18 @@ public class CoupleService {
     private final CoupleRepository coupleRepository;
     private final UserRepository userRepository;
     private final CoupleInvitationRepository coupleInvitationRepository;
+    private final ScheduleRepository scheduleRepository;
 
-    public CoupleService(CoupleRepository coupleRepository, UserRepository userRepository, CoupleInvitationRepository coupleInvitationRepository) {
+    public CoupleService(
+            CoupleRepository coupleRepository,
+            UserRepository userRepository,
+            CoupleInvitationRepository coupleInvitationRepository,
+            ScheduleRepository scheduleRepository
+    ) {
         this.coupleRepository = coupleRepository;
         this.userRepository = userRepository;
         this.coupleInvitationRepository = coupleInvitationRepository;
+        this.scheduleRepository = scheduleRepository;
     }
 
     public void sendInvitation(Long userId, CoupleRequest request) {
@@ -150,6 +158,8 @@ public class CoupleService {
     public void disconnectCouple(Long userId) {
         Couple couple = coupleRepository.findByUser1_IdOrUser2_Id(userId, userId)
                         .orElseThrow(() -> new IllegalArgumentException("연결된 커플이 없습니다."));
+
+        scheduleRepository.deleteByCoupleId(couple.getId());
 
         coupleRepository.delete(couple);
     }
