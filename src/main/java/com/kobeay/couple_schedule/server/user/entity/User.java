@@ -46,4 +46,8 @@ public class User {
 
     @Column(name = "invite_code", unique = true)
     private String inviteCode;
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
 }

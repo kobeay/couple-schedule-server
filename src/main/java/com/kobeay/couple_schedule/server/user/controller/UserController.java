@@ -43,6 +43,16 @@ public class UserController {
         userService.logout(request);
     }
 
+    @PatchMapping("/me/nickname")
+    public void updateNickname(
+            Authentication authentication,
+            @Valid @RequestBody UserNicknameUpdateRequest request
+    ) {
+        Long userId = (Long) authentication.getPrincipal();
+
+        userService.updateNickname(userId, request);
+    }
+
     @DeleteMapping("/me")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(Authentication authentication) {

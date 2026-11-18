@@ -201,6 +201,14 @@ public class UserService {
     }
 
     @Transactional
+    public void updateNickname(Long userId, UserNicknameUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        user.updateNickname(request.getNickname());
+    }
+
+    @Transactional
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
