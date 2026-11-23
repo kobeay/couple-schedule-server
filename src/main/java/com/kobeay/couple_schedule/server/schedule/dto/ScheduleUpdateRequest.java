@@ -1,5 +1,6 @@
 package com.kobeay.couple_schedule.server.schedule.dto;
 
+import com.kobeay.couple_schedule.server.schedule.entity.RepeatType;
 import com.kobeay.couple_schedule.server.schedule.entity.ScheduleType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,4 +30,8 @@ public class ScheduleUpdateRequest {
 
     @NotNull(message = "일정 종류를 선택해 주세요.")
     private ScheduleType type;
+
+    private RepeatType repeatType;
+
+    private LocalDate repeatEndDate;
 }

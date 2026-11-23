@@ -1,5 +1,6 @@
 package com.kobeay.couple_schedule.server.schedule.repository;
 
+import com.kobeay.couple_schedule.server.schedule.entity.RepeatType;
 import com.kobeay.couple_schedule.server.schedule.entity.Schedule;
 import com.kobeay.couple_schedule.server.schedule.entity.ScheduleType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +14,17 @@ import java.util.List;
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     @Query("""
     SELECT s FROM Schedule s
-    WHERE s.date BETWEEN :startDate AND :endDate
+    WHERE (
+        s.date BETWEEN :startDate AND :endDate
+        OR (
+            s.repeatType <> :noneType
+            AND s.date <= :endDate
+            AND (
+                s.repeatEndDate IS NULL
+                OR s.repeatEndDate >= :startDate
+            )
+        )
+    )
     AND (
         (s.type = :personalType AND (s.user.id = :userId OR s.user.id = :partnerId))
         OR
@@ -27,7 +38,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("partnerId") Long partnerId,
             @Param("coupleId") Long coupleId,
             @Param("personalType") ScheduleType personalType,
-            @Param("coupleType") ScheduleType coupleType
+            @Param("coupleType") ScheduleType coupleType,
+            @Param("noneType") RepeatType noneType
     );
 
     @Modifying
