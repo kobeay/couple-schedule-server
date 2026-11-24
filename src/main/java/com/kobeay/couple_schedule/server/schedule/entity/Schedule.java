@@ -44,6 +44,12 @@ public class Schedule {
     @Column(nullable = false)
     private ScheduleType type;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RepeatType repeatType;
+
+    private LocalDate repeatEndDate;
+
     public Schedule(
             User user,
             Couple couple,
@@ -52,7 +58,9 @@ public class Schedule {
             LocalTime startTime,
             LocalTime endTime,
             String memo,
-            ScheduleType type
+            ScheduleType type,
+            RepeatType repeatType,
+            LocalDate repeatEndDate
     ) {
         this.user = user;
         this.couple = couple;
@@ -62,6 +70,8 @@ public class Schedule {
         this.endTime = endTime;
         this.memo = memo;
         this.type = type;
+        this.repeatType = repeatType;
+        this.repeatEndDate = repeatEndDate;
     }
 
     public void update(
@@ -71,7 +81,9 @@ public class Schedule {
             LocalTime startTime,
             LocalTime endTime,
             String memo,
-            ScheduleType type
+            ScheduleType type,
+            RepeatType repeatType,
+            LocalDate repeatEndDate
     ) {
         this.couple = couple;
         this.title = title;
@@ -80,5 +92,7 @@ public class Schedule {
         this.endTime = endTime;
         this.memo = memo;
         this.type = type;
+        this.repeatType = repeatType;
+        this.repeatEndDate = repeatEndDate;
     }
 }

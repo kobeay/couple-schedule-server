@@ -5,6 +5,7 @@ import com.kobeay.couple_schedule.server.couple.repository.CoupleRepository;
 import com.kobeay.couple_schedule.server.schedule.dto.ScheduleCreateRequest;
 import com.kobeay.couple_schedule.server.schedule.dto.ScheduleListResponse;
 import com.kobeay.couple_schedule.server.schedule.dto.ScheduleUpdateRequest;
+import com.kobeay.couple_schedule.server.schedule.entity.RepeatType;
 import com.kobeay.couple_schedule.server.schedule.entity.Schedule;
 import com.kobeay.couple_schedule.server.schedule.entity.ScheduleType;
 import com.kobeay.couple_schedule.server.schedule.repository.ScheduleRepository;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -46,8 +48,14 @@ public class ScheduleService {
             throw new IllegalArgumentException("시작 시간을 먼저 입력해 주세요.");
         }
 
-        if (request.getStartTime() != null && request.getEndTime() != null && !request.getEndTime().isAfter(request.getStartTime())) {
+        if (request.getStartTime() != null && request.getEndTime() != null &&
+                !request.getEndTime().isAfter(request.getStartTime())) {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 해요.");
+        }
+
+        if (request.getRepeatEndDate() != null &&
+                request.getRepeatEndDate().isBefore(request.getDate())) {
+            throw new IllegalArgumentException("반복 종료일은 시작일보다 빠를 수 없어요.");
         }
 
         Schedule schedule = new Schedule(
@@ -58,7 +66,9 @@ public class ScheduleService {
                 request.getStartTime(),
                 request.getEndTime(),
                 request.getMemo(),
-                request.getType()
+                request.getType(),
+                request.getRepeatType(),
+                request.getRepeatEndDate()
         );
 
         scheduleRepository.save(schedule);
@@ -88,11 +98,51 @@ public class ScheduleService {
             }
         }
 
-        List<Schedule> schedules = scheduleRepository.findMonthlySchedules(startDate, endDate, userId, partnerId, coupleId, ScheduleType.PERSONAL, ScheduleType.COUPLE);
+        List<Schedule> schedules = scheduleRepository.findMonthlySchedules(
+                startDate,
+                endDate,
+                userId,
+                partnerId,
+                coupleId,
+                ScheduleType.PERSONAL,
+                ScheduleType.COUPLE,
+                RepeatType.NONE
+        );
 
-        return schedules.stream()
-                .map(ScheduleListResponse::from)
-                .toList();
+        List<ScheduleListResponse> result = new ArrayList<>();
+
+        for (Schedule schedule : schedules) {
+            LocalDate originalDate = schedule.getDate();
+            LocalDate repeatEndDate = schedule.getRepeatEndDate();
+
+            for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+                if (date.isBefore(originalDate)) {
+                    continue;
+                }
+
+                if (repeatEndDate != null && date.isAfter(repeatEndDate)) {
+                    break;
+                }
+
+                boolean matches = switch (schedule.getRepeatType()) {
+                    case NONE -> date.isEqual(originalDate);
+
+                    case DAILY -> true;
+
+                    case WEEKLY -> date.getDayOfWeek() == originalDate.getDayOfWeek();
+
+                    case MONTHLY -> date.getDayOfMonth() == originalDate.getDayOfMonth();
+
+                    case YEARLY -> date.getMonthValue() == originalDate.getMonthValue() && date.getDayOfMonth() == originalDate.getDayOfMonth();
+                };
+
+                if (matches) {
+                    result.add(ScheduleListResponse.from(schedule, date));
+                }
+            }
+        }
+
+        return  result;
     }
 
     @Transactional
@@ -142,6 +192,13 @@ public class ScheduleService {
             throw new IllegalArgumentException("종료 시간은 시작 시간보다 늦어야 해요.");
         }
 
+        if (request.getRepeatEndDate() != null &&
+                request.getRepeatEndDate().isBefore(request.getDate())) {
+            throw new IllegalArgumentException(
+                    "반복 종료일은 시작일보다 빠를 수 없어요."
+            );
+        }
+
         schedule.update(
                 couple,
                 request.getTitle(),
@@ -149,7 +206,9 @@ public class ScheduleService {
                 request.getStartTime(),
                 request.getEndTime(),
                 request.getMemo(),
-                request.getType()
+                request.getType(),
+                request.getRepeatType(),
+                request.getRepeatEndDate()
         );
     }
 
