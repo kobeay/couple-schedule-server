@@ -31,6 +31,7 @@ public class ScheduleUpdateRequest {
     @NotNull(message = "일정 종류를 선택해 주세요.")
     private ScheduleType type;
 
+    @NotNull(message = "반복 종류를 선택해 주세요.")
     private RepeatType repeatType;
 
     private LocalDate repeatEndDate;

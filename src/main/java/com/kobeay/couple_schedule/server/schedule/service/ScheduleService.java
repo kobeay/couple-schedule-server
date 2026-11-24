@@ -58,6 +58,13 @@ public class ScheduleService {
             throw new IllegalArgumentException("반복 종료일은 시작일보다 빠를 수 없어요.");
         }
 
+        if (request.getRepeatType() == RepeatType.NONE &&
+                request.getRepeatEndDate() != null) {
+            throw new IllegalArgumentException(
+                    "반복하지 않는 일정은 반복 종료일을 설정할 수 없어요."
+            );
+        }
+
         Schedule schedule = new Schedule(
                 user,
                 couple,
@@ -196,6 +203,13 @@ public class ScheduleService {
                 request.getRepeatEndDate().isBefore(request.getDate())) {
             throw new IllegalArgumentException(
                     "반복 종료일은 시작일보다 빠를 수 없어요."
+            );
+        }
+
+        if (request.getRepeatType() == RepeatType.NONE &&
+                request.getRepeatEndDate() != null) {
+            throw  new IllegalArgumentException(
+                    "반복하지 않는 일정은 반복 종료일을 설정할 수 없어요."
             );
         }
 
