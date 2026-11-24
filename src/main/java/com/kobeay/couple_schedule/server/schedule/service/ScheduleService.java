@@ -244,7 +244,7 @@ public class ScheduleService {
             if (currentCouple == null
                     || schedule.getCouple() == null
                     || !schedule.getCouple().getId().equals(currentCouple.getId())) {
-                throw new IllegalArgumentException("일저을 삭제할 권한이 없습니다.");
+                throw new IllegalArgumentException("일정을 삭제할 권한이 없습니다.");
             }
         }
 
