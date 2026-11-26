@@ -37,8 +37,8 @@ public class User {
     @Column(nullable = false)
     private String nickname;
 
-    @Column(name = "profile_image_url")
-    private String profileImageUrl;
+    @Column(name = "profile_image_object_name")
+    private String profileImageObjectName;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "login_type", nullable = false)
@@ -50,4 +50,7 @@ public class User {
     public void updateNickname(String nickname) {
         this.nickname = nickname;
     }
-}
+
+    public void updateProfileImage(String profileImageObjectName) {
+        this.profileImageObjectName = profileImageObjectName;
+    }}

@@ -8,11 +8,13 @@ public class UserResponse {
     private String email;
     private String nickname;
     private String inviteCode;
+    private String profileImageUrl;
 
-    public UserResponse(Long id, String email, String nickname, String inviteCode) {
+    public UserResponse(Long id, String email, String nickname, String inviteCode, String profileImageUrl) {
         this.id = id;
         this.email = email;
         this.nickname = nickname;
         this.inviteCode = inviteCode;
+        this.profileImageUrl = profileImageUrl;
     }
 }

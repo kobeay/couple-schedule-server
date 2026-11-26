@@ -3,6 +3,7 @@ package com.kobeay.couple_schedule.server.user.service;
 import com.kobeay.couple_schedule.server.couple.entity.Couple;
 import com.kobeay.couple_schedule.server.couple.repository.CoupleInvitationRepository;
 import com.kobeay.couple_schedule.server.couple.repository.CoupleRepository;
+import com.kobeay.couple_schedule.server.global.service.GcsService;
 import com.kobeay.couple_schedule.server.schedule.repository.ScheduleRepository;
 import com.kobeay.couple_schedule.server.user.dto.*;
 import com.kobeay.couple_schedule.server.user.entity.LoginType;
@@ -17,7 +18,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Optional;
@@ -32,6 +35,7 @@ public class UserService {
     private final CoupleRepository coupleRepository;
     private final ScheduleRepository scheduleRepository;
     private final CoupleInvitationRepository coupleInvitationRepository;
+    private final GcsService gcsService;
 
     public UserService(
             UserRepository userRepository,
@@ -41,7 +45,8 @@ public class UserService {
             RefreshTokenHasher refreshTokenHasher,
             CoupleRepository coupleRepository,
             ScheduleRepository scheduleRepository,
-            CoupleInvitationRepository coupleInvitationRepository
+            CoupleInvitationRepository coupleInvitationRepository,
+            GcsService gcsService
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -51,6 +56,7 @@ public class UserService {
         this.coupleRepository = coupleRepository;
         this.scheduleRepository = scheduleRepository;
         this.coupleInvitationRepository = coupleInvitationRepository;
+        this.gcsService = gcsService;
     }
 
     public Optional<User> findByEmail(String email) {
@@ -202,7 +208,13 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        return new UserResponse(user.getId(), user.getEmail(), user.getNickname(), user.getInviteCode());
+        String profileImageUrl = null;
+
+        if (user.getProfileImageObjectName() != null) {
+            profileImageUrl = gcsService.generateSignedUrl(user.getProfileImageObjectName());
+        }
+
+        return new UserResponse(user.getId(), user.getEmail(), user.getNickname(), user.getInviteCode(), profileImageUrl);
     }
 
     @Transactional
@@ -236,5 +248,24 @@ public class UserService {
         }
 
         userRepository.delete(user);
+    }
+
+    @Transactional
+    public void registerProfileImage(Long userId, MultipartFile file) throws IOException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        if (user.getProfileImageObjectName() != null) {
+            throw new IllegalArgumentException("이미 프로필 이미지가 등록되어 있습니다.");
+        }
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("이미지 파일을 선택해 주세요.");
+        }
+
+        String objectName = gcsService.upload(file);
+
+        user.updateProfileImage(objectName);
+
     }
 }

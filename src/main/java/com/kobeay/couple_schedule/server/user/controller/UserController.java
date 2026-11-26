@@ -6,6 +6,9 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/users")
@@ -59,5 +62,16 @@ public class UserController {
         Long userId = (Long) authentication.getPrincipal();
 
         userService.deleteUser(userId);
+    }
+
+    @PostMapping("/me/profile-image")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void registerProfileImage(
+            Authentication authentication,
+            @RequestParam("file")MultipartFile file
+    ) throws IOException {
+        Long userId = (Long) authentication.getPrincipal();
+
+        userService.registerProfileImage(userId, file);
     }
 }
