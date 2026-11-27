@@ -74,4 +74,15 @@ public class UserController {
 
         userService.registerProfileImage(userId, file);
     }
+
+    @PatchMapping("/me/profile-image")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateProfileImage(
+            Authentication authentication,
+            @RequestParam("file")MultipartFile file
+    ) throws IOException {
+        Long userId = (Long) authentication.getPrincipal();
+
+        userService.updateProfileImage(userId, file);
+    }
 }

@@ -15,6 +15,8 @@ import com.kobeay.couple_schedule.server.user.repository.RefreshTokenRepository;
 import com.kobeay.couple_schedule.server.user.repository.UserRepository;
 import com.kobeay.couple_schedule.server.user.util.InviteCodeGenerator;
 import jakarta.transaction.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -247,6 +249,19 @@ public class UserService {
             coupleRepository.flush();
         }
 
+        String objectName = user.getProfileImageObjectName();
+
+        if (objectName != null) {
+            TransactionSynchronizationManager.registerSynchronization(
+                    new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            gcsService.delete(objectName);
+                        }
+                    }
+            );
+        }
+
         userRepository.delete(user);
     }
 
@@ -266,6 +281,34 @@ public class UserService {
         String objectName = gcsService.upload(file);
 
         user.updateProfileImage(objectName);
+    }
 
+    @Transactional
+    public void updateProfileImage(Long userId, MultipartFile file) throws IOException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        String oldObjectName = user.getProfileImageObjectName();
+
+        if (oldObjectName == null) {
+            throw new IllegalArgumentException("등록된 프로필 이미지가 없습니다.");
+        }
+
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("이미지 파일을 선택해 주세요.");
+        }
+
+        String objectName = gcsService.upload(file);
+
+        user.updateProfileImage(objectName);
+
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        gcsService.delete(oldObjectName);
+                    }
+                }
+        );
     }
 }
