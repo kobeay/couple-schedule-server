@@ -11,11 +11,13 @@ public class CoupleResponse {
     private String partnerNickname;
     private Instant connectedAt;
     private LocalDate metDate;
+    private String partnerProfileImageUrl;
 
-    public CoupleResponse(boolean connected, String partnerNickname, Instant connectedAt, LocalDate metDate) {
+    public CoupleResponse(boolean connected, String partnerNickname, Instant connectedAt, LocalDate metDate, String partnerProfileImageUrl) {
         this.connected = connected;
         this.partnerNickname = partnerNickname;
         this.connectedAt = connectedAt;
         this.metDate = metDate;
+        this.partnerProfileImageUrl = partnerProfileImageUrl;
     }
 }

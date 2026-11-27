@@ -9,6 +9,7 @@ import com.kobeay.couple_schedule.server.couple.entity.CoupleInvitation;
 import com.kobeay.couple_schedule.server.couple.entity.InvitationStatus;
 import com.kobeay.couple_schedule.server.couple.repository.CoupleInvitationRepository;
 import com.kobeay.couple_schedule.server.couple.repository.CoupleRepository;
+import com.kobeay.couple_schedule.server.global.service.GcsService;
 import com.kobeay.couple_schedule.server.schedule.repository.ScheduleRepository;
 import com.kobeay.couple_schedule.server.user.entity.User;
 import com.kobeay.couple_schedule.server.user.repository.UserRepository;
@@ -25,17 +26,20 @@ public class CoupleService {
     private final UserRepository userRepository;
     private final CoupleInvitationRepository coupleInvitationRepository;
     private final ScheduleRepository scheduleRepository;
+    private final GcsService gcsService;
 
     public CoupleService(
             CoupleRepository coupleRepository,
             UserRepository userRepository,
             CoupleInvitationRepository coupleInvitationRepository,
-            ScheduleRepository scheduleRepository
+            ScheduleRepository scheduleRepository,
+            GcsService gcsService
     ) {
         this.coupleRepository = coupleRepository;
         this.userRepository = userRepository;
         this.coupleInvitationRepository = coupleInvitationRepository;
         this.scheduleRepository = scheduleRepository;
+        this.gcsService = gcsService;
     }
 
     public void sendInvitation(Long userId, CoupleRequest request) {
@@ -138,20 +142,28 @@ public class CoupleService {
         Optional<Couple> optionalCouple = coupleRepository.findByUser1_IdOrUser2_Id(userId, userId);
 
         if (optionalCouple.isEmpty()) {
-            return new CoupleResponse(false, null, null, null);
+            return new CoupleResponse(false, null, null, null, null);
         }
 
         Couple couple = optionalCouple.get();
 
-        String partnerNickname;
+        User partner;
 
         if (couple.getUser1().getId().equals(userId)) {
-            partnerNickname = couple.getUser2().getNickname();
+            partner = couple.getUser2();
         } else {
-            partnerNickname = couple.getUser1().getNickname();
+            partner = couple.getUser1();
         }
 
-        return new CoupleResponse(true, partnerNickname, couple.getConnectedAt(), couple.getMetDate());
+        String partnerNickname = partner.getNickname();
+
+        String profileImageUrl = null;
+
+        if (partner.getProfileImageObjectName() != null) {
+            profileImageUrl = gcsService.generateSignedUrl(partner.getProfileImageObjectName());
+        }
+
+        return new CoupleResponse(true, partnerNickname, couple.getConnectedAt(), couple.getMetDate(), profileImageUrl);
     }
 
     @Transactional
